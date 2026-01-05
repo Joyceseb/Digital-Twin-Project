@@ -1,0 +1,25 @@
+<h2>Compare LLM Models</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <textarea name="message" rows="5" cols="70"></textarea><br><br>
+
+    <label>Upload document (optional):</label>
+    <input type="file" name="document"><br><br>
+
+    <button type="submit">Compare</button>
+</form>
+
+{% if results %}
+<hr>
+<h3>OpenAI</h3>
+<p>{{ results.openai }}</p>
+<hr>
+
+<h3>Mistral</h3>
+<p>{{ results.mistral }}</p>
+<hr>
+
+<h3>DeepSeek</h3>
+<p>{{ results.deepseek }}</p>
+{% endif %}

@@ -1,24 +1,23 @@
 from mistralai import Mistral
-import time
+from prompts import load_prompt
+
 
 class MistralModel:
     def __init__(self, api_key, model_name="mistral-large-latest"):
         self.client = Mistral(api_key=api_key)
         self.model_name = model_name
 
-    def generate(self, prompt: str) -> str:
-        for attempt in range(3):
-            try:
-                response = self.client.chat.complete(
-                    model=self.model_name,
-                    messages=[{"role": "user", "content": prompt}]
-                )
+        # Load system prompt
+        self.system_prompt = load_prompt("mistral_system_prompt.md")
 
-                # NEW SDK: message.content (NOT ["content"])
-                return response.choices[0].message.content
+    def generate(self, user_content: str) -> str:
+        response = self.client.chat.complete(
+            model=self.model_name,
+            messages=[
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": user_content},
+            ],
+            temperature=0.65,
+        )
 
-            except Exception as e:
-                print(f"[Mistral Retry {attempt+1}/3] {e}")
-                time.sleep(1)
-
-        return "Mistral failed after 3 retries."
+        return response.choices[0].message.content

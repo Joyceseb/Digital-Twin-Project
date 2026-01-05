@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        @apply bg-slate-50 font-sans antialiased;
+        color: #1D1E20;
+        /* pangea-dark */
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply font-heading text-pangea-teal;
+    }
+}
+
+@layer components {
+    .btn-primary {
+        @apply px-4 py-2 bg-pangea-teal text-white rounded-lg hover:bg-pangea-teal-light transition-colors font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    .btn-secondary {
+        @apply px-4 py-2 bg-white text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors font-medium shadow-sm;
+    }
+
+    .card {
+        @apply bg-white rounded-xl shadow-sm border border-slate-100;
+    }
+}
+
+@layer utilities {
+    .animation-delay-2000 {
+        animation-delay: 2s;
+    }
+
+    .animation-delay-4000 {
+        animation-delay: 4s;
+    }
+
+    @keyframes orbit {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translateY(0px);
+        }
+
+        50% {
+            transform: translateY(-20px);
+        }
+    }
+
+    .animate-orbit-slow {
+        animation: orbit 60s linear infinite;
+    }
+
+    .animate-orbit-reverse {
+        animation: orbit 50s linear infinite reverse;
+    }
+
+    .animate-float {
+        animation: float 6s ease-in-out infinite;
+    }
+}

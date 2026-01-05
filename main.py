@@ -10,12 +10,12 @@ print("\n=========== Running Benchmark ===========\n")
 
 for name, model in models.items():
     print(f">>> Running {name}...")
-    
+
     try:
         resp = model.generate(prompt)
         responses[name] = resp
         print(f"{name} ✓ SUCCESS\n")
-    
+
     except Exception as e:
         error_msg = f"SKIPPED / ERROR: {str(e)}"
         responses[name] = error_msg

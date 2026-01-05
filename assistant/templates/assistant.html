@@ -1,0 +1,25 @@
+<h2>AI Assistant (Single Model)</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <textarea name="message" rows="5" cols="70"></textarea><br><br>
+
+    <label>Choose Model:</label>
+    <select name="model_name">
+        <option value="openai">OpenAI GPT-4o-mini</option>
+        <option value="mistral">Mistral Large</option>
+        <option value="deepseek">DeepSeek Chat</option>
+    </select><br><br>
+
+    <label>Upload document (optional):</label>
+    <input type="file" name="document"><br><br>
+
+    <button type="submit">Send</button>
+</form>
+
+{% if response %}
+<hr>
+<h3>Response:</h3>
+<p>{{ response }}</p>
+{% endif %}
