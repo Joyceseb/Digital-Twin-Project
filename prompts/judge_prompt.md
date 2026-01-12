@@ -16,16 +16,18 @@ Total Score for each model is the average of these 5 metrics.
 JSON:
 {
   "question": "...",
+  "model_A_name": "NAME_OF_MODEL_A",
   "model_A_answer": "...",
+  "model_B_name": "NAME_OF_MODEL_B",
   "model_B_answer": "..."
 }
 
 ### OUTPUT FORMAT (STRICT JSON):
 {
   "analysis": {
-     "model_A_critique": "Detailed critique of Model A. Mention specific strengths and weaknesses observed in the response.",
-     "model_B_critique": "Detailed critique of Model B. Mention specific strengths and weaknesses observed in the response.",
-     "comparison": "Detailed comparison. Explain WHERE one model was better (e.g., formatting, depth, tone, accuracy). Explain WHY the winner was chosen."
+     "model_A_critique": "Detailed critique of [Model A Name]. (Min 50 words). Mention specific strengths/weaknesses.",
+     "model_B_critique": "Detailed critique of [Model B Name]. (Min 50 words). Mention specific strengths/weaknesses.",
+     "comparison": "Detailed Head-to-Head Analysis (Min 150 words). You must refer to models by their REAL NAMES (e.g., 'OpenAI', 'Mistral'). Explain exactly WHY one received higher scores than the other in specific categories. Justify the numbers."
   },
   "metrics": {
       "model_A": {

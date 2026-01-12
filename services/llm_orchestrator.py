@@ -18,6 +18,10 @@ class LLMOrchestrator:
     def __init__(self):
         self.rag = RAGPipeline()
         self.models = ModelFactory.create_models()  # {'openai': OpenAIModel(), ...}
+        from services.memory_service import clear_all_memories
+        clear_all_memories() # Clear chat history on startup
+        self.rag.clear() # Start with a clean slate to prevent "ghost" documents
+        self.current_file_path = None  # Persist the last processed file path
 
     # -------------------------------------
     # INTERNAL HELPERS
@@ -84,6 +88,7 @@ class LLMOrchestrator:
             self.rag.index_document(file_path)
             print("DEBUG: Indexing complete.")
             
+            self.current_file_path = file_path # Update current file context
             return file_path
         except Exception as e:
             print(f"DEBUG: Error in _process_document: {e}")
@@ -115,6 +120,9 @@ class LLMOrchestrator:
         processed_file_path = None
         if file:
             processed_file_path = self._process_document(file)
+        else:
+            # Fallback to current context if no new file provided
+            processed_file_path = self.current_file_path
 
         model_name = model_name.lower()
         model = self.models.get(model_name)
@@ -203,7 +211,7 @@ User Request: {message}
             processed_file_path = self._process_document(file)
 
         responses = {}
-        target_models = ["openai", "mistral"]
+        target_models = ["openai", "mistral"] # DeepSeek disabled by user request
         
         # Check translation intent for Compare Mode too
         translation_context = None
@@ -234,11 +242,15 @@ User Request: {message}
             if name in target_models:
                 
                 def run_model_logic():
-                    # If translation intent & file present, bypass RAG
-                    if translation_context:
-                        return model.generate(translation_context)
-                    else:
-                        return self.rag.run(model, message)["response"]
+                    try:
+                        # If translation intent & file present, bypass RAG
+                        if translation_context:
+                            return model.generate(translation_context)
+                        else:
+                            return self.rag.run(model, message)["response"]
+                    except Exception as e:
+                        print(f"❌ Error running {name}: {e}")
+                        return f"Error: Model failed to generate response. ({str(e)})"
                     
                 result = self._measure_performance(run_model_logic)
                 responses[name] = result 

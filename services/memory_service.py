@@ -44,3 +44,13 @@ def append_message(model_key: str, role: str, content: str):
     history.append({"role": role, "content": content})
     _save_memory(path, history)
     return history
+
+def clear_all_memories():
+    """Clear all persisted memory files."""
+    for model_key, path in MEMORY_FILES.items():
+        if os.path.exists(path):
+            try:
+                os.remove(path)
+                print(f"DEBUG: Cleared memory for {model_key}")
+            except Exception as e:
+                print(f"DEBUG: Failed to clear memory for {model_key}: {e}")

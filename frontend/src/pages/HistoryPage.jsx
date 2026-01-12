@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
 import PageBackground from '../components/PageBackground';
 
 const ArenaPage = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [selectedBattle, setSelectedBattle] = useState(null);
+    // [FIX] Add state to track if component is fully mounted for chart rendering 
+    const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
         fetchStats();
+        // Delay setting mounted to ensure DOM layout is computed
+        const timer = setTimeout(() => setIsMounted(true), 100);
+        return () => clearTimeout(timer);
     }, []);
 
     const fetchStats = async () => {
@@ -104,35 +109,33 @@ const ArenaPage = () => {
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-1 h-full bg-pangea-teal"></div>
                     <h2 className="text-lg font-semibold text-pangea-dark dark:text-white mb-6">Champion Win Rates</h2>
-                    <div className="h-64">
-                        {stats?.win_rates?.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={stats.win_rates} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748B' }} />
-                                    <YAxis hide />
-                                    <Tooltip
-                                        cursor={{ fill: 'transparent' }}
-                                        content={({ active, payload }) => {
-                                            if (active && payload && payload.length) {
-                                                return (
-                                                    <div className="bg-slate-800 text-white text-xs rounded-lg py-2 px-3 shadow-xl">
-                                                        <p className="font-semibold mb-1 capitalize">{payload[0].payload.name}</p>
-                                                        <p>Win Rate: <span className="font-bold text-pangea-teal-light">{payload[0].value}%</span></p>
-                                                        <p className="text-slate-400 mt-1">{payload[0].payload.wins} Wins</p>
-                                                    </div>
-                                                );
-                                            }
-                                            return null;
-                                        }}
-                                    />
-                                    <Bar dataKey="percentage" radius={[4, 4, 0, 0]} barSize={60}>
-                                        {stats.win_rates.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[entry.name] || '#CBD5E1'} />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
+                    <div className="h-64 w-full flex justify-center items-center" style={{ minHeight: '250px' }}>
+                        {isMounted && stats?.win_rates?.length > 0 ? (
+                            <BarChart width={600} height={250} data={stats.win_rates} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748B' }} />
+                                <YAxis hide />
+                                <Tooltip
+                                    cursor={{ fill: 'transparent' }}
+                                    content={({ active, payload }) => {
+                                        if (active && payload && payload.length) {
+                                            return (
+                                                <div className="bg-slate-800 text-white text-xs rounded-lg py-2 px-3 shadow-xl">
+                                                    <p className="font-semibold mb-1 capitalize">{payload[0].payload.name}</p>
+                                                    <p>Win Rate: <span className="font-bold text-pangea-teal-light">{payload[0].value}%</span></p>
+                                                    <p className="text-slate-400 mt-1">{payload[0].payload.wins} Wins</p>
+                                                </div>
+                                            );
+                                        }
+                                        return null;
+                                    }}
+                                />
+                                <Bar dataKey="percentage" radius={[4, 4, 0, 0]} barSize={60}>
+                                    {stats.win_rates.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[entry.name] || '#CBD5E1'} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
                         ) : (
                             <div className="h-full flex items-center justify-center text-slate-400">
                                 No battles recorded yet.

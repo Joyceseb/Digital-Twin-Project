@@ -13,7 +13,24 @@ from pptx import Presentation
 
 def load_pdf(path: str) -> List[dict]:
     docs = PyPDFLoader(path).load()
-    return [{"content": d.page_content or "", "metadata": {"source": os.path.basename(path)}} for d in docs]
+    base_content = [{"content": d.page_content or "", "metadata": {"source": os.path.basename(path)}} for d in docs]
+    
+    # Visual Enrichment (Optional)
+    try:
+        from rag.enricher import VisualEnricher
+        enricher = VisualEnricher()
+        visual_data = enricher.enrich_pdf(path)
+        if visual_data:
+            # Append visual data as a separate "chunk" or append to the last page
+            # Let's add it as a separate document chunk to ensure high retrieval relevance
+            base_content.append({
+                "content": visual_data,
+                "metadata": {"source": os.path.basename(path), "type": "visual_analysis"}
+            })
+    except Exception as e:
+        print(f"Enrichment Skipped: {e}")
+
+    return base_content
 
 
 def load_txt(path: str) -> List[dict]:

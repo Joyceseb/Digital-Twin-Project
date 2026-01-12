@@ -19,5 +19,6 @@ class ModelFactory:
             
             # Judge models
             # "claude": ClaudeModel(api_key=os.getenv("ANTHROPIC_API_KEY")),
-            "gemini": GeminiModel(api_key=os.getenv("GEMINI_API_KEY")),
+            "gemini": GeminiModel(api_key=os.getenv("GEMINI_API_KEY"), model_name="gemini-1.5-flash"),
+            "gemini_judge": GeminiModel(api_key=os.getenv("GEMINI_API_KEY"), model_name="gemini-2.0-flash-exp"),
         }

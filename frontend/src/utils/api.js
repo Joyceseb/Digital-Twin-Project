@@ -1,4 +1,4 @@
-const API_BASE = "http://127.0.0.1:8000/api";
+const API_BASE = "/api";
 
 export async function sendChat(model, message, documents = []) {
   const res = await fetch(`${API_BASE}/chat/${model}/`, {
@@ -13,6 +13,7 @@ export async function uploadDocument(file) {
   const formData = new FormData();
   formData.append("file", file);
 
+  console.log(`Uploading file to: ${API_BASE}/upload/`);
   const res = await fetch(`${API_BASE}/upload/`, {
     method: "POST",
     body: formData,

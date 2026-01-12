@@ -8,7 +8,7 @@ class DeepSeekModel:
         self.model_name = model_name
 
         # Load system prompt
-        self.system_prompt = load_prompt("deepseek_system_prompt.md")
+        self.system_prompt = load_prompt("master_prompt.md").replace("{MODEL_NAME}", self.model_name)
 
     def generate(self, user_content: str) -> str:
         response = self.client.chat.completions.create(

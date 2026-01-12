@@ -4,6 +4,8 @@ import PageBackground from '../components/PageBackground';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+
+
 const DocumentPreviewPage = () => {
     const [file, setFile] = useState(null);
     const [previewContent, setPreviewContent] = useState("");
@@ -88,41 +90,62 @@ const DocumentPreviewPage = () => {
 
                 {error && <div className="text-red-500">{error}</div>}
 
-                {previewContent && (
-                    <div className="mt-6 p-8 bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-auto max-h-[800px] text-slate-800 dark:text-slate-200">
-                        <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            components={{
-                                h1: ({ node, ...props }) => <h1 className="text-3xl font-bold mt-6 mb-4 pb-2 border-b border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" {...props} />,
-                                h2: ({ node, ...props }) => <h2 className="text-2xl font-bold mt-6 mb-3 text-slate-800 dark:text-slate-100" {...props} />,
-                                h3: ({ node, ...props }) => <h3 className="text-xl font-bold mt-4 mb-2 text-slate-800 dark:text-slate-200" {...props} />,
-                                h4: ({ node, ...props }) => <h4 className="text-lg font-bold mt-3 mb-2" {...props} />,
-                                p: ({ node, ...props }) => <p className="mb-4 leading-relaxed" {...props} />,
-                                ul: ({ node, ...props }) => <ul className="list-disc pl-6 mb-4 space-y-1" {...props} />,
-                                ol: ({ node, ...props }) => <ol className="list-decimal pl-6 mb-4 space-y-1" {...props} />,
-                                li: ({ node, ...props }) => <li className="pl-1" {...props} />,
-                                blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-indigo-500 pl-4 italic my-4 bg-slate-50 dark:bg-slate-900 py-2 pr-2" {...props} />,
-                                code: ({ node, inline, className, children, ...props }) => {
-                                    return inline ?
-                                        <code className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-sm font-mono text-indigo-600 dark:text-indigo-400" {...props}>{children}</code> :
-                                        <pre className="bg-slate-800 text-slate-200 p-4 rounded-lg overflow-x-auto my-4 text-sm font-mono" {...props}><code>{children}</code></pre>
-                                }
-                            }}
-                        >
-                            {previewContent}
-                        </ReactMarkdown>
+
+
+                // ... inside component ...
+
+                {/* Visual Preview Section (Top Priority) */}
+                {file && (
+                    <div className="mt-6 h-[800px] border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden shadow-sm bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
+                        {file.type === "application/pdf" ? (
+                            <iframe
+                                src={URL.createObjectURL(file)}
+                                className="w-full h-full"
+                                title="PDF Preview"
+                            />
+                        ) : file.type.startsWith("image/") ? (
+                            <img
+                                src={URL.createObjectURL(file)}
+                                alt="Document Preview"
+                                className="max-w-full max-h-full object-contain p-4"
+                            />
+                        ) : (
+                            // Fallback: Show Extracted Text if available, else standard message
+                            <div className="w-full h-full overflow-auto bg-white dark:bg-slate-950 p-8">
+                                {previewContent ? (
+                                    <div className="prose dark:prose-invert max-w-none">
+                                        <h3 className="text-lg font-semibold text-slate-400 mb-6 border-b border-slate-200 dark:border-slate-800 pb-2">
+                                            {file.name} (Text Preview)
+                                        </h3>
+                                        <ReactMarkdown
+                                            remarkPlugins={[remarkGfm]}
+                                            components={{
+                                                code: ({ node, inline, className, children, ...props }) => (
+                                                    inline ?
+                                                        <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded text-indigo-600 dark:text-indigo-400" {...props}>{children}</code> :
+                                                        <pre className="bg-slate-800 text-slate-200 p-4 rounded-lg overflow-x-auto" {...props}><code>{children}</code></pre>
+                                                )
+                                            }}
+                                        >
+                                            {previewContent}
+                                        </ReactMarkdown>
+                                    </div>
+                                ) : (
+                                    <div className="h-full flex flex-col items-center justify-center text-center">
+                                        <div className="w-16 h-16 mx-auto bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 text-slate-400">
+                                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                        </div>
+                                        <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">Generating Text Preview...</h3>
+                                        <p className="text-slate-500 mb-4">Extracting text content for display.</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 )}
 
-                {file && file.type === "application/pdf" && (
-                    <div className="mt-6 h-[800px] border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
-                        <iframe
-                            src={URL.createObjectURL(file)}
-                            className="w-full h-full"
-                            title="PDF Preview"
-                        />
-                    </div>
-                )}
+                {/* Extracted Text Section (Collapsible/Secondary) */}
+
             </div>
         </div>
     );

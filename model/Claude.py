@@ -1,5 +1,6 @@
 import os
 from anthropic import Anthropic
+from prompts import load_prompt
 
 class ClaudeModel:
     def __init__(self, api_key=None):
@@ -9,6 +10,9 @@ class ClaudeModel:
             self.client = None
         else:
             self.client = Anthropic(api_key=self.api_key)
+        
+        self.model_name = "claude-3-opus"
+        self.system_prompt = load_prompt("master_prompt.md").replace("{MODEL_NAME}", self.model_name)
 
     def generate(self, prompt: str):
         """
@@ -22,6 +26,7 @@ class ClaudeModel:
             model="claude-3-opus-20240229",
             max_tokens=800,
             temperature=0,
+            system=self.system_prompt,
             messages=[{"role": "user", "content": prompt}],
         )
 

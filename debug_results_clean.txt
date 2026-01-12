@@ -1,4 +1,0 @@
---- DEBUGGING VECTOR STORE ---
-Collection Count: 0
-WARNING: Vector Store is EMPTY.
-------------------------------

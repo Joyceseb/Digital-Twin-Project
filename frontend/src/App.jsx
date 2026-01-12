@@ -10,7 +10,7 @@ import JudgeResultsPage from './pages/JudgeResultsPage';
 
 import HistoryPage from './pages/HistoryPage';
 import DocumentPreviewPage from './pages/DocumentPreviewPage';
-import VoiceChatPage from './pages/VoiceChatPage';
+
 
 const App = () => {
   return (
@@ -25,7 +25,7 @@ const App = () => {
             <Route path="judge-results" element={<JudgeResultsPage />} />
             <Route path="history" element={<HistoryPage />} />
             <Route path="preview" element={<DocumentPreviewPage />} />
-            <Route path="voice-mode" element={<VoiceChatPage />} />
+
           </Route>
         </Routes>
       </ChatProvider>

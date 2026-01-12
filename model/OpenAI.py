@@ -7,7 +7,7 @@ class OpenAIModel:
     def __init__(self, api_key, model_name="gpt-4o"):
         self.client = OpenAI(api_key=api_key)
         self.model_name = model_name
-        self.system_prompt = load_prompt("openai_system_prompt.md")
+        self.system_prompt = load_prompt("master_prompt.md").replace("{MODEL_NAME}", self.model_name).replace("{MODEL_NAME}", self.model_name)
 
     def generate(self, user_content: str) -> str:
         response = self.client.chat.completions.create(

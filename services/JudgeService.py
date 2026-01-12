@@ -7,7 +7,7 @@ class JudgeService:
     def __init__(self):
         models = ModelFactory.create_models()
         self.claude = models.get("claude")
-        self.gemini = models.get("gemini")
+        self.gemini = models.get("gemini_judge") # Use Pro model for judging
 
     # -----------------------------------------------------------
     # Internal Helpers
@@ -71,11 +71,22 @@ class JudgeService:
 
         # Generic Clean JSON function
         def clean_json(text):
+            # Remove Markdown code blocks
             if "```json" in text:
                 text = text.split("```json")[1]
             if "```" in text:
                 text = text.split("```")[0]
-            return text.strip()
+            
+            text = text.strip()
+            
+            # Simple fix for single quotes acting as property quotes
+            # This is risky if content contains single quotes, but Gemini often does this error
+            # Only do this if we suspect it's invalid JSON
+            if text.startswith("{") and "'" in text and not '"' in text[:10]:
+                 # Heuristic: if it looks like python dict string
+                 pass 
+                 
+            return text
 
         # Helper to safely call judge
         def safe_judge(model, q, a, b, prompt):
@@ -85,19 +96,45 @@ class JudgeService:
             # Use original _judge_pair logic but with better parsing
             data = {
                 "question": q,
-                "model_A_answer": a,
-                "model_B_answer": b
+                "model_A_name": "OpenAI",
+                "model_A_answer": a if a else "No Answer",
+                "model_B_name": "Mistral",
+                "model_B_answer": b if b else "No Answer"
             }
+            raw = ""
             try:
                 raw = model.chat_completion(
                     system_prompt=prompt,
                     user_message=json.dumps(data)
                 )
                 cleaned = clean_json(raw)
-                return json.loads(cleaned)
+                
+                # Attempt standard parse
+                try:
+                    return json.loads(cleaned)
+                except json.JSONDecodeError:
+                    # Fallback: try to repair common issues
+                    import ast
+                    try:
+                        # ast.literal_eval handles python-style dicts (single quotes)
+                        # strictly safe for literals
+                        return ast.literal_eval(cleaned)
+                    except:
+                        raise # Reraise original error if fallback fails
+                        
             except Exception as e:
                 print(f"Judge Error: {e}")
-                return {"error": str(e), "raw": raw}
+                print(f"Raw Output causing error: {raw}")
+                # Return a partial result so the UI doesn't crash entirely
+                return {
+                    "error": str(e), 
+                    "raw": raw[:200] + "...",
+                    "metrics": {
+                        "model_A": {"accuracy": 0, "reasoning": 0, "clarity": 0, "safety": 0, "factuality": 0},
+                        "model_B": {"accuracy": 0, "reasoning": 0, "clarity": 0, "safety": 0, "factuality": 0}
+                    },
+                    "analysis": {"comparison": f"Judge processing failed due to format error: {str(e)}"}
+                }
 
         # Pairwise comparisons (Only one pair: OpenAI vs Mistral)
         # We need to adapt this to the new JSON structure which returns "metrics" per model
@@ -128,9 +165,20 @@ class JudgeService:
         
         final_analysis = []
         
+        if not judgments:
+            # Both judges failed or are missing
+            return {
+                "error": "All AI Judges failed to evaluate the response.",
+                "details": "Please check API keys and model availability."
+            }
+
         for judge_name, perf_entry in judgments.items():
             res = perf_entry["result"] # Extract actual judge JSON
             
+            if "error" in res:
+                 final_analysis.append(f"**Judge {judge_name.title()} Error**: {res['error']}")
+                 continue
+
             if "metrics" in res:
                 # Map model_A -> openai, model_B -> mistral
                 # "metrics" -> "model_A": {...}
